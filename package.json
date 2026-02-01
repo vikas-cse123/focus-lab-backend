@@ -1,9 +1,15 @@
 {
     "type": "module",
     "scripts": {
-      "dev":"node --env-file=.env --watch app.js"
+        "dev": "node --env-file=.env --watch app.js"
     },
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+    "dependencies": {
+        "bcrypt": "^6.0.0",
+        "express": "^5.2.1",
+        "mongoose": "^9.1.5",
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "@types/node": "^25.1.0"
+    }
 }
