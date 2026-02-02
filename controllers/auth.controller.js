@@ -1,5 +1,8 @@
 import User from "../models/user.model.js";
-
+import Otp from "../models/otp.model.js";
+import sendEmail from "../service/email.service.js";
+import { readFile } from "node:fs/promises";
+import {generateOtp} from "../utils/otp.util.js"
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.validatedBody;
@@ -16,6 +19,38 @@ export const registerUser = async (req, res) => {
       message:
         "Account created . Please verify your email to activate your account.",
     });
+  } catch (error) {}
+};
+
+
+
+export const sendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email, isVerified: false });
+    if (!user) {
+      return res
+        .status(200)
+        .json({ success: true, message: "OTP sent to your email address" });
+    }
+
+    const otp =generateOtp()
+     await Otp.create({ email, otp });
+
+    let html = await readFile("./templates/emails/verifyEmail.html", "utf-8");
+    html = html.replaceAll("{{APP_NAME}}", process.env.APP_NAME);
+    html = html.replaceAll("{{OTP_CODE}}", otp);
+    ((html = html.replaceAll("{{SUPPORT_EMAIL}}", process.env.SUPPORT_EMAIL)),
+      (html = html.replaceAll("{{YEAR}}", new Date().getFullYear())));
+
+     await sendEmail({
+      to: email,
+      from: process.env.EMAIL,
+      subject: "Your verification code",
+      html,
+    });
+    return res.status(200).json({ message: "OTP sent to your email address" });
   } catch (error) {
+    console.log(error);
   }
 };
