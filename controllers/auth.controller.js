@@ -76,6 +76,8 @@ export const verifyOtp = async (req, res) => {
     //handle: if  user not found
     user.isVerified = true;
     await user.save();
+    sendWelcomeEmail({name:user.name,email:user.email})
+
     return res.status(200).json({ success: true, message: "Email verified successfully. You can now log in." });
   } catch (error) {
     console.log(error);
@@ -83,3 +85,21 @@ export const verifyOtp = async (req, res) => {
 };
 
 
+
+export const sendWelcomeEmail = async ({name,email}) => {
+  try {
+    const from = process.env.EMAIL
+    const to = email
+    const subject = "You're all set! Let’s get started ✨"
+    let html = await readFile("./templates/emails/welcomeEmail.html","utf-8")
+    html = html.replaceAll("{{appName}}",process.env.APP_NAME)
+    html = html.replaceAll("{{year}}",new Date().getFullYear())
+    html = html.replaceAll("{{name}}",name)
+    html = html.replaceAll("{{supportEmail}}",process.env.SUPPORT_EMAIL)
+    await sendEmail({from,to,subject,html})
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+}
